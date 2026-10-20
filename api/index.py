@@ -8,6 +8,7 @@ from bson import ObjectId
 
 app = FastAPI(title="Agenda Personal & Sistema de Rutinas API")
 
+# Configuración CORS para permitir peticiones locales y de Vercel
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,13 +17,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Conexión a MongoDB Atlas
 MONGO_URI = "mongodb+srv://jhon_user:Soraya92@cluster0.nuj9phg.mongodb.net/?appName=Cluster0"
 client = MongoClient(MONGO_URI)
 db = client["agenda_db"]
 
 
 # ==========================================
-# MODELOS DE DATOS
+# MODELOS DE DATOS (PYDANTIC)
 # ==========================================
 
 class UsuarioCrear(BaseModel):
@@ -149,7 +151,6 @@ def crear_rutina_hermana(rutina: RutinaHermanaCrear):
 
 @app.put("/rutinas/editar/{rutina_id}")
 def editar_rutina(rutina_id: str, datos: RutinaEditar):
-    """Actualiza una rutina existente en MongoDB Atlas."""
     actualizacion = {
         "cliente_id": datos.cliente_id,
         "dia_semana": datos.dia_semana,
@@ -211,7 +212,7 @@ def eliminar_rutina(rutina_id: str):
 
 
 # ==========================================
-# ENDPOINTS DE CUMPLIMIENTO Y HOY
+# ENDPOINTS DE CUMPLIMIENTO
 # ==========================================
 
 @app.get("/hoy")
