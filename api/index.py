@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 from pymongo import MongoClient
 from bson import ObjectId
 
-app = FastAPI(title="Agenda Personal & Sistema de Rutinas API")
+# Configuración con root_path para Vercel
+app = FastAPI(title="Agenda Personal & Sistema de Rutinas API", root_path="/api")
 
-# Configuración CORS para permitir peticiones locales y de Vercel
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,7 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Conexión a MongoDB Atlas
 MONGO_URI = "mongodb+srv://jhon_user:Soraya92@cluster0.nuj9phg.mongodb.net/?appName=Cluster0"
 client = MongoClient(MONGO_URI)
 db = client["agenda_db"]

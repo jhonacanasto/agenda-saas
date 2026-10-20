@@ -408,10 +408,10 @@
   </div>
 
   <script>
-    // DETECTOR AUTOMÁTICO DE URL DE API (Vercel vs Local)
-    const API_URL = window.location.hostname.includes('vercel.app') 
-      ? '' 
-      : 'http://127.0.0.1:8000';
+// Detecta si estás en servidor Vercel o en servidor local
+const API_URL = window.location.hostname.includes('vercel.app') 
+  ? '/api' 
+  : 'http://127.0.0.1:8000';
 
     let usuarioActual = null;
     let listaRutinasGlobal = [];
