@@ -23,7 +23,6 @@
       padding: 20px;
     }
 
-    /* Modal de Login */
     .login-modal {
       max-width: 400px;
       margin: 80px auto;
@@ -55,7 +54,6 @@
     }
     .btn-action:hover { opacity: 0.9; }
 
-    /* Layout Principal */
     .app-container { display: none; }
     
     .header-bar {
@@ -69,7 +67,6 @@
       border: 1px solid rgba(255,255,255,0.05);
     }
 
-    /* 4 Botones del Cliente */
     .menu-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -95,7 +92,6 @@
     .modulo-content { display: none; background: var(--card-bg); padding: 25px; border-radius: 16px; }
     .modulo-content.active { display: block; }
 
-    /* Pestañas */
     .tab-container { display: flex; gap: 10px; margin-bottom: 20px; }
     .tab-btn {
       flex: 1;
@@ -165,7 +161,6 @@
       margin-right: 6px;
     }
 
-    /* Modal emergente de Edición */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -186,7 +181,6 @@
       border: 1px solid rgba(255,255,255,0.1);
     }
 
-    /* Gantt Minimalista */
     .gantt-bar-bg { background: #334155; border-radius: 8px; height: 22px; width: 100%; position: relative; margin-top: 8px; }
     .gantt-bar-fill { background: linear-gradient(90deg, #38bdf8, #8b5cf6); height: 100%; border-radius: 8px; }
   </style>
@@ -289,8 +283,7 @@
           <div>
             <label>Asignar a Alumno/Cliente:</label>
             <select id="selectCliente">
-              <option value="jhoncanasto">Jhon Alexander Canasto (jhoncanasto)</option>
-              <option value="tefacana">Gloria Stefany Pulido (tefacana)</option>
+              <option value="">Cargando clientes...</option>
             </select>
           </div>
           <div>
@@ -367,10 +360,7 @@
       <input type="hidden" id="editTipoRutina">
 
       <label>Alumno:</label>
-      <select id="editCliente">
-        <option value="jhoncanasto">Jhon Alexander Canasto (jhoncanasto)</option>
-        <option value="tefacana">Gloria Stefany Pulido (tefacana)</option>
-      </select>
+      <select id="editCliente"></select>
 
       <label>Día de la Semana:</label>
       <select id="editDia">
@@ -408,10 +398,9 @@
   </div>
 
   <script>
-// Detecta si estás en servidor Vercel o en servidor local
-const API_URL = window.location.hostname.includes('vercel.app') 
-  ? '/api' 
-  : 'http://127.0.0.1:8000';
+    const API_URL = window.location.hostname.includes('vercel.app') 
+      ? '/api' 
+      : 'http://127.0.0.1:8000';
 
     let usuarioActual = null;
     let listaRutinasGlobal = [];
@@ -451,7 +440,7 @@ const API_URL = window.location.hostname.includes('vercel.app')
         if (data.rol === 'entrenador') {
           document.getElementById('panelEntrenador').style.display = 'block';
           document.getElementById('panelCliente').style.display = 'none';
-          cargarClientesSelect(); // <-- Carga dinámica de alumnos
+          await cargarClientesSelect();
           cargarTodasRutinasEntrenador();
         } else {
           document.getElementById('panelCliente').style.display = 'block';
@@ -464,14 +453,16 @@ const API_URL = window.location.hostname.includes('vercel.app')
       }
     }
 
-    // Nueva función para listar usuarios con rol 'cliente' en el selector
     async function cargarClientesSelect() {
       try {
         const res = await fetch(`${API_URL}/usuarios/`);
         const usuarios = await res.json();
         
         const select = document.getElementById('selectCliente');
-        select.innerHTML = ''; // Limpia opciones estáticas
+        const selectEdit = document.getElementById('editCliente');
+        
+        select.innerHTML = '';
+        if(selectEdit) selectEdit.innerHTML = '';
 
         const clientes = usuarios.filter(u => u.rol === 'cliente');
 
@@ -481,10 +472,17 @@ const API_URL = window.location.hostname.includes('vercel.app')
         }
 
         clientes.forEach(c => {
-          const opt = document.ionCreateElement ? document.createElement('option') : document.createElement('option');
+          const opt = document.createElement('option');
           opt.value = c.username;
           opt.innerText = `${c.nombre_completo} (${c.username})`;
           select.appendChild(opt);
+
+          if(selectEdit) {
+            const opt2 = document.createElement('option');
+            opt2.value = c.username;
+            opt2.innerText = `${c.nombre_completo} (${c.username})`;
+            selectEdit.appendChild(opt2);
+          }
         });
 
       } catch (err) {
@@ -561,18 +559,6 @@ const API_URL = window.location.hostname.includes('vercel.app')
 
           contenedor.appendChild(div);
         });
-
-        const btnGuardar = document.createElement('button');
-        btnGuardar.className = 'btn-action';
-        btnGuardar.style.cssText = 'background: var(--green); color: white; margin-top: 15px;';
-        btnGuardar.innerText = '💾 Guardar Cumplimiento de Hoy en MongoDB';
-        btnGuardar.onclick = enviarCumplimientoRutina;
-        contenedor.appendChild(btnGuardar);
-
-      } catch (err) {
-        contenedor.innerHTML = '<p style="color: #ef4444;">Error consultando las rutinas.</p>';
-      }
-    }
 
         const btnGuardar = document.createElement('button');
         btnGuardar.className = 'btn-action';
