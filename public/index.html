@@ -451,6 +451,7 @@ const API_URL = window.location.hostname.includes('vercel.app')
         if (data.rol === 'entrenador') {
           document.getElementById('panelEntrenador').style.display = 'block';
           document.getElementById('panelCliente').style.display = 'none';
+          cargarClientesSelect(); // <-- Carga dinámica de alumnos
           cargarTodasRutinasEntrenador();
         } else {
           document.getElementById('panelCliente').style.display = 'block';
@@ -460,6 +461,34 @@ const API_URL = window.location.hostname.includes('vercel.app')
 
       } catch (err) {
         errorDiv.innerText = 'No se pudo conectar con el servidor.';
+      }
+    }
+
+    // Nueva función para listar usuarios con rol 'cliente' en el selector
+    async function cargarClientesSelect() {
+      try {
+        const res = await fetch(`${API_URL}/usuarios/`);
+        const usuarios = await res.json();
+        
+        const select = document.getElementById('selectCliente');
+        select.innerHTML = ''; // Limpia opciones estáticas
+
+        const clientes = usuarios.filter(u => u.rol === 'cliente');
+
+        if (clientes.length === 0) {
+          select.innerHTML = '<option value="">No hay alumnos registrados</option>';
+          return;
+        }
+
+        clientes.forEach(c => {
+          const opt = document.ionCreateElement ? document.createElement('option') : document.createElement('option');
+          opt.value = c.username;
+          opt.innerText = `${c.nombre_completo} (${c.username})`;
+          select.appendChild(opt);
+        });
+
+      } catch (err) {
+        console.error('Error cargando la lista de clientes', err);
       }
     }
 
