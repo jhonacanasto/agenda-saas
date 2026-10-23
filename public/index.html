@@ -508,8 +508,12 @@ const API_URL = window.location.hostname.includes('vercel.app')
         const diaTxt = soloHoy ? data.dia_actual : 'Semana Completa';
         document.getElementById('txtDiaHoy').innerText = diaTxt;
 
-        if (rutinas.length === 0) {
-          contenedor.innerHTML = `<p style="color: #94a3b8;">No tienes rutinas asignadas para ${soloHoy ? 'el día de hoy (' + diaTxt + ')' : 'esta semana'}.</p>`;
+        if (!rutinas || rutinas.length === 0) {
+          contenedor.innerHTML = `
+            <div style="background: #0f172a; padding: 20px; border-radius: 12px; text-align: center; border: 1px dashed #334155;">
+              <p style="color: #94a3b8; margin: 0;">ℹ️ Aún no tienes rutinas asignadas para ${soloHoy ? 'el día de hoy (' + diaTxt + ')' : 'esta semana'}.</p>
+              <small style="color: #64748b;">Pídele a tu entrenadora que te asigne una rutina desde su panel.</small>
+            </div>`;
           return;
         }
 
@@ -557,6 +561,18 @@ const API_URL = window.location.hostname.includes('vercel.app')
 
           contenedor.appendChild(div);
         });
+
+        const btnGuardar = document.createElement('button');
+        btnGuardar.className = 'btn-action';
+        btnGuardar.style.cssText = 'background: var(--green); color: white; margin-top: 15px;';
+        btnGuardar.innerText = '💾 Guardar Cumplimiento de Hoy en MongoDB';
+        btnGuardar.onclick = enviarCumplimientoRutina;
+        contenedor.appendChild(btnGuardar);
+
+      } catch (err) {
+        contenedor.innerHTML = '<p style="color: #ef4444;">Error consultando las rutinas.</p>';
+      }
+    }
 
         const btnGuardar = document.createElement('button');
         btnGuardar.className = 'btn-action';
