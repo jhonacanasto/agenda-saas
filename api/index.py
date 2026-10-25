@@ -267,3 +267,50 @@ def guardar_cumplimiento(datos: Dict[str, Any]):
     )
 
     return {"status": "ok", "porcentaje_cumplimiento": porcentaje}
+    # --- MODELOS PARA PROYECTOS Y TAREAS ---
+class SubTarea(BaseModel):
+    id: str
+    nombre: str
+    fecha_limite: Optional[str] = None
+    completado: bool = False
+
+class ProyectoCreate(BaseModel):
+    usuario_id: str
+    nombre_proyecto: str
+    descripcion: Optional[str] = ""
+    fecha_limite: Optional[str] = None
+    tareas: List[SubTarea] = []
+
+class TareaPersonalCreate(BaseModel):
+    usuario_id: str
+    tipo: str  # "recurrente" o "unica"
+    titulo: str
+    dia_recurrente: Optional[str] = None  # Ej. "Monday"
+    fecha_limite: Optional[str] = None   # Para tareas únicas
+    completado: bool = False
+
+# --- ENDPOINTS PROYECTOS ---
+@app.get("/proyectos/{usuario_id}")
+def obtener_proyectos(usuario_id: str):
+    proyectos = list(db["proyectos"].find({"usuario_id": usuario_id}))
+    for p in proyectos:
+        p["_id"] = str(p["_id"])
+    return proyectos
+
+@app.post("/proyectos/crear/")
+def crear_proyecto(data: ProyectoCreate):
+    res = db["proyectos"].insert_dict(data.dict()) if hasattr(db["proyectos"], "insert_dict") else db["proyectos"].insert_one(data.dict())
+    return {"status": "success", "mensaje": "Proyecto creado correctamente"}
+
+# --- ENDPOINTS TAREAS PERSONALES ---
+@app.get("/tareas/{usuario_id}")
+def obtener_tareas_personales(usuario_id: str):
+    tareas = list(db["tareas_personales"].find({"usuario_id": usuario_id}))
+    for t in tareas:
+        t["_id"] = str(t["_id"])
+    return tareas
+
+@app.post("/tareas/crear/")
+def crear_tarea_personal(data: TareaPersonalCreate):
+    db["tareas_personales"].insert_one(data.dict())
+    return {"status": "success", "mensaje": "Tarea personal guardada"}
