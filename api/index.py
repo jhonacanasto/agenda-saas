@@ -21,44 +21,62 @@ client = MongoClient(MONGO_URI)
 db = client["agenda_db"]
 
 # --- MODELOS ---
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-class UsuarioCreate(BaseModel):
+class UsuarioCrear(BaseModel):
     username: str
     password: str
     nombre_completo: str
     rol: str
 
-class SubTarea(BaseModel):
-    id: str
-    nombre: str
-    fecha_limite: Optional[str] = None
-    completado: bool = False
+class UsuarioLogin(BaseModel):
+    username: str
+    password: str
 
-class ProyectoCreate(BaseModel):
-    usuario_id: str
-    nombre_proyecto: str
-    descripcion: Optional[str] = ""
-    fecha_limite: Optional[str] = None
-    tareas: List[SubTarea] = []
+class EjercicioDetalle(BaseModel):
+    nombre_ejercicio: str
+    peso: Optional[str] = "Sin peso"
+    observaciones: Optional[str] = ""
+    numero_repeticiones: int = 4
 
-class TareaPersonalCreate(BaseModel):
-    usuario_id: str
-    tipo: str  # "recurrente" o "unica"
-    titulo: str
-    dia_recurrente: Optional[str] = None
-    fecha_limite: Optional[str] = None
-    completado: bool = False
+class RutinaHermanaCrear(BaseModel):
+    cliente_id: str
+    dia_semana: str
+    titulo_rutina: Optional[str] = "Rutina General"
+    ejercicios: List[EjercicioDetalle]
 
-# --- RUTAS DE AUTENTICACIÓN Y USUARIOS ---
+class RutinaJhonCrear(BaseModel):
+    cliente_id: str
+    dia_semana: str
+    nombre_rutina: str
+    enlace_video: Optional[str] = ""
+
+class RutinaEditar(BaseModel):
+    cliente_id: str
+    dia_semana: str
+    tipo: str
+    nombre_rutina: Optional[str] = None
+    enlace_video: Optional[str] = None
+    titulo_rutina: Optional[str] = None
+    ejercicios: Optional[List[EjercicioDetalle]] = []
+
+# --- ENDPOINTS USUARIOS ---
+@app.get("/")
+def home():
+    return {"status": "API activa"}
+
+@app.post("/usuarios/crear/", status_code=status.HTTP_201_CREATED)
+def crear_usuario(usuario: UsuarioCrear):
+    if db["usuarios"].find_one({"username": usuario.username}):
+        raise HTTPException(status_code=400, detail="El usuario ya existe")
+    db["usuarios"].insert_one(usuario.dict())
+    return {"status": "success", "username": usuario.username}
+
 @app.post("/login/")
-def login(data: LoginRequest):
-    user = db["usuarios"].find_one({"username": data.username, "password": data.password})
+def login(datos: UsuarioLogin):
+    user = db["usuarios"].find_one({"username": datos.username, "password": datos.password})
     if not user:
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
     return {
+        "status": "ok",
         "username": user["username"],
         "nombre_completo": user.get("nombre_completo", user["username"]),
         "rol": user.get("rol", "cliente")
@@ -71,14 +89,7 @@ def listar_usuarios():
         u["_id"] = str(u["_id"])
     return usuarios
 
-@app.post("/usuarios/crear/")
-def crear_usuario(data: UsuarioCreate):
-    if db["usuarios"].find_one({"username": data.username}):
-        raise HTTPException(status_code=400, detail="El usuario ya existe")
-    db["usuarios"].insert_one(data.dict())
-    return {"status": "success", "mensaje": "Usuario creado con éxito"}
-
-# --- RUTAS DE RUTINAS CON HORARIO COLOMBIA (UTC-5) ---
+# --- ENDPOINTS RUTINAS (CON HORA COLOMBIA UTC-5) ---
 @app.get("/rutinas/cliente/{cliente_id}")
 def obtener_rutinas_cliente(cliente_id: str):
     rutinas = list(db["rutinas_asignadas"].find({"cliente_id": cliente_id}))
@@ -90,7 +101,7 @@ def obtener_rutinas_cliente(cliente_id: str):
 def obtener_rutina_cliente_hoy(cliente_id: str):
     dias_semana = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     
-    # Hora de Colombia (UTC-5) exacta para evitar desfase horario
+    # Ajuste explícito a la hora de Colombia (UTC-5)
     hora_colombia = datetime.utcnow() - timedelta(hours=5)
     dia_actual = dias_semana[hora_colombia.weekday()]
     
@@ -100,50 +111,42 @@ def obtener_rutina_cliente_hoy(cliente_id: str):
     return {"dia_actual": dia_actual, "rutinas": rutinas}
 
 @app.get("/rutinas/todas/")
-def obtener_todas_rutinas():
+def listar_todas_rutinas():
     rutinas = list(db["rutinas_asignadas"].find({}))
     for r in rutinas:
         r["_id"] = str(r["_id"])
     return rutinas
 
-@app.post("/rutinas/crear-tipo-jhon/")
-def crear_rutina_video(data: Dict[str, Any]):
-    data["tipo"] = "directa_video"
-    db["rutinas_asignadas"].insert_one(data)
-    return {"status": "success"}
+@app.post("/rutinas/crear-tipo-jhon/", status_code=status.HTTP_201_CREATED)
+def crear_rutina_jhon(rutina: RutinaJhonCrear):
+    doc = {"tipo": "directa_video", **rutina.dict(), "fecha_creacion": datetime.now().isoformat()}
+    res = db["rutinas_asignadas"].insert_one(doc)
+    return {"status": "ok", "rutina_id": str(res.inserted_id)}
 
-@app.post("/rutinas/crear-tipo-hermana/")
-def crear_rutina_detallada(data: Dict[str, Any]):
-    data["tipo"] = "detallada"
-    db["rutinas_asignadas"].insert_one(data)
-    return {"status": "success"}
+@app.post("/rutinas/crear-tipo-hermana/", status_code=status.HTTP_201_CREATED)
+def crear_rutina_hermana(rutina: RutinaHermanaCrear):
+    doc = {"tipo": "detallada", **rutina.dict(), "fecha_creacion": datetime.now().isoformat()}
+    res = db["rutinas_asignadas"].insert_one(doc)
+    return {"status": "ok", "rutina_id": str(res.inserted_id)}
+
+@app.put("/rutinas/editar/{rutina_id}")
+def editar_rutina(rutina_id: str, datos: RutinaEditar):
+    actualizacion = datos.dict()
+    if datos.tipo == "detallada":
+        actualizacion["ejercicios"] = [e.dict() for e in datos.ejercicios]
+    db["rutinas_asignadas"].update_one({"_id": ObjectId(rutina_id)}, {"$set": actualizacion})
+    return {"status": "ok"}
 
 @app.delete("/rutinas/eliminar/{rutina_id}")
 def eliminar_rutina(rutina_id: str):
     db["rutinas_asignadas"].delete_one({"_id": ObjectId(rutina_id)})
-    return {"status": "success"}
+    return {"status": "ok"}
 
-# --- RUTAS PROYECTOS Y TAREAS ---
-@app.get("/proyectos/{usuario_id}")
-def obtener_proyectos(usuario_id: str):
-    proyectos = list(db["proyectos"].find({"usuario_id": usuario_id}))
-    for p in proyectos:
-        p["_id"] = str(p["_id"])
-    return proyectos
-
-@app.post("/proyectos/crear/")
-def crear_proyecto(data: ProyectoCreate):
-    db["proyectos"].insert_one(data.dict())
-    return {"status": "success"}
-
-@app.get("/tareas/{usuario_id}")
-def obtener_tareas(usuario_id: str):
-    tareas = list(db["tareas_personales"].find({"usuario_id": usuario_id}))
-    for t in tareas:
-        t["_id"] = str(t["_id"])
-    return tareas
-
-@app.post("/tareas/crear/")
-def crear_tarea(data: TareaPersonalCreate):
-    db["tareas_personales"].insert_one(data.dict())
-    return {"status": "success"}
+@app.post("/guardar")
+def guardar_cumplimiento(datos: Dict[str, Any]):
+    db["registros_diarios"].update_one(
+        {"usuario_id": datos.get("usuario_id"), "fecha": datos.get("fecha")},
+        {"$set": datos},
+        upsert=True
+    )
+    return {"status": "ok"}
