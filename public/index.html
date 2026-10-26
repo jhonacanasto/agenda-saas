@@ -188,6 +188,9 @@
       border: 1px solid rgba(255,255,255,0.1);
     }
 
+    .gantt-bar-bg { background: #334155; border-radius: 8px; height: 18px; width: 100%; overflow: hidden; margin-top: 8px; }
+    .gantt-bar-fill { background: linear-gradient(90deg, #38bdf8, #10b981); height: 100%; transition: width 0.3s ease; }
+
     @media (max-width: 768px) {
       .app-layout { flex-direction: column; }
       .sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
@@ -253,13 +256,24 @@
         <div class="header-bar">
           <h2 style="margin:0;">📊 Proyectos Personales</h2>
         </div>
+
+        <!-- Formulario Crear Proyecto -->
         <div class="card-box">
-          <h3 style="margin:0 0 5px 0; color:var(--accent);">🚀 Proyecto: Sistema SaaS Multi-Rol</h3>
-          <p style="color:#94a3b8; font-size:0.9rem; margin:0 0 10px 0;">Fecha Límite: <strong>2026-10-30</strong></p>
-          <div style="background:#334155; border-radius:8px; height:18px; width:100%; overflow:hidden;">
-            <div style="background:linear-gradient(90deg, #38bdf8, #10b981); height:100%; width:75%;"></div>
+          <h4 style="color:var(--accent); margin-top:0;">➕ Crear Nuevo Proyecto</h4>
+          <input type="text" id="txtNomProyecto" class="input-field" placeholder="Nombre del Proyecto (Ej. Desarrollo SaaS)">
+          <input type="date" id="txtFechaProyecto" class="input-field">
+          
+          <label>Pasos / Hitos del Proyecto:</label>
+          <div id="contenedorPasosProyecto">
+            <input type="text" class="input-field paso-item" placeholder="Paso 1 (Ej. Diseñar Base de Datos)">
           </div>
-          <small style="color: #94a3b8;">Avance: 75% completado</small>
+          <button type="button" onclick="agregarCampoPaso()" style="background:#334155; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; margin-bottom:12px;">+ Agregar Paso</button>
+          
+          <button class="btn-action" style="background:var(--green); color:white;" onclick="crearProyecto()">Guardar Proyecto</button>
+        </div>
+
+        <div id="contenedorListaProyectos">
+          <p style="color:#94a3b8;">Cargando proyectos...</p>
         </div>
       </div>
 
@@ -268,32 +282,57 @@
         <div class="header-bar">
           <h2 style="margin:0;">✅ Tareas Pendientes</h2>
         </div>
+
         <div class="tab-container">
           <div id="tabRecurrentes" class="tab-btn active" onclick="cambiarTipoTarea('recurrentes')">🔄 Tareas Recurrentes</div>
           <div id="tabUnicas" class="tab-btn" onclick="cambiarTipoTarea('unicas')">📌 Tareas Únicas</div>
         </div>
-        <div id="secRecurrentes" class="card-box">
-          <h4 style="color:var(--accent); margin-top:0;">Tareas Recurrentes Semanales</h4>
-          <p style="color:#94a3b8;">• Revisión de base de datos (Lunes)</p>
+
+        <!-- RECURRENTES -->
+        <div id="secRecurrentes">
+          <div class="card-box">
+            <h4 style="color:var(--accent); margin-top:0;">➕ Nueva Tarea Recurrente (Semanal)</h4>
+            <input type="text" id="txtTituloRecurrente" class="input-field" placeholder="Ej. Revisión de base de datos">
+            <select id="selDiaRecurrente" class="input-field">
+              <option value="Monday">Lunes</option>
+              <option value="Tuesday">Martes</option>
+              <option value="Wednesday">Miércoles</option>
+              <option value="Thursday">Jueves</option>
+              <option value="Friday">Viernes</option>
+              <option value="Saturday">Sábado</option>
+              <option value="Sunday">Domingo</option>
+            </select>
+            <button class="btn-action" style="background:var(--green); color:white;" onclick="crearTarea('recurrente')">Guardar Tarea Recurrente</button>
+          </div>
+          <div id="contenedorTareasRecurrentes"></div>
         </div>
-        <div id="secUnicas" class="card-box" style="display:none;">
-          <h4 style="color:var(--accent); margin-top:0;">Tareas Únicas con Fecha Límite</h4>
-          <p style="color:#94a3b8;">• Actualización de servidor (2026-10-30)</p>
+
+        <!-- ÚNICAS -->
+        <div id="secUnicas" style="display:none;">
+          <div class="card-box">
+            <h4 style="color:var(--accent); margin-top:0;">➕ Nueva Tarea Única</h4>
+            <input type="text" id="txtTituloUnica" class="input-field" placeholder="Ej. Renovar dominio Vercel">
+            <input type="date" id="txtFechaUnica" class="input-field">
+            <button class="btn-action" style="background:var(--green); color:white;" onclick="crearTarea('unica')">Guardar Tarea Única</button>
+          </div>
+          <div id="contenedorTareasUnicas"></div>
         </div>
       </div>
 
       <!-- VISTA 4: PENSAMIENTOS -->
       <div id="view-pensamientos" class="view-section">
         <div class="header-bar">
-          <h2 style="margin:0;">🧠 Bitácora de Pensamientos</h2>
+          <h2 style="margin:0;">🧠 Bitácora de Pensamientos (Journaling)</h2>
         </div>
         <div class="card-box">
-          <textarea style="width: 100%; height: 120px; background: #0f172a; color: white; border-radius: 8px; padding: 12px; border: 1px solid #334155;" placeholder="Escribe tus reflexiones..."></textarea>
-          <button class="btn-action" style="margin-top: 10px; width: auto; padding: 10px 20px;">Guardar Nota</button>
+          <textarea id="txtPensamiento" style="width: 100%; height: 100px; background: #0f172a; color: white; border-radius: 8px; padding: 12px; border: 1px solid #334155;" placeholder="Escribe tus reflexiones o ideas del día..."></textarea>
+          <button class="btn-action" style="margin-top: 10px; width: auto; padding: 10px 20px;" onclick="guardarPensamiento()">Guardar Pensamiento</button>
         </div>
+
+        <div id="contenedorPensamientos"></div>
       </div>
 
-      <!-- VISTA ENTRENADOR (COMPLETA) -->
+      <!-- VISTA ENTRENADOR -->
       <div id="view-panel-entrenador" class="view-section">
         <div class="header-bar">
           <h2 style="margin:0;">📋 Panel de Entrenador</h2>
@@ -304,7 +343,6 @@
           <div id="tabGestionBtn" class="tab-btn" onclick="cambiarPestanaEntrenador('gestion')">⚙️ Modificar / Eliminar Rutinas</div>
         </div>
 
-        <!-- SECCIÓN 1: CREAR -->
         <div id="secCrearRutina" class="card-box">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
             <div>
@@ -365,21 +403,19 @@
           </div>
         </div>
 
-        <!-- SECCIÓN 2: GESTIONAR -->
         <div id="secGestionRutinas" class="card-box" style="display: none;">
           <h4 style="color: var(--accent);">Gestión de Rutinas Asignadas</h4>
           <div id="contenedorTodasRutinas">
             <p style="color: #94a3b8;">Cargando lista de rutinas...</p>
           </div>
         </div>
-
       </div>
 
     </div>
 
   </div>
 
-  <!-- MODAL PARA EDICIÓN DE RUTINA -->
+  <!-- MODAL EDICIÓN RUTINA -->
   <div id="modalEdicion" class="modal-overlay">
     <div class="modal-content">
       <h3 style="color:var(--accent); margin-top:0;">✏️ Modificar Rutina</h3>
@@ -469,6 +505,9 @@
           document.getElementById('navEntrenadorOptions').style.display = 'none';
           navegarA('ejercicios');
           cargarRutinasCliente(data.username, true);
+          cargarProyectos();
+          cargarTareas();
+          cargarPensamientos();
         }
 
       } catch (err) {
@@ -494,6 +533,113 @@
       }
     }
 
+    // --- PROYECTOS ---
+    function agregarCampoPaso() {
+      const cont = document.getElementById('contenedorPasosProyecto');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'input-field paso-item';
+      input.placeholder = `Paso ${cont.children.length + 1}`;
+      cont.appendChild(input);
+    }
+
+    async function crearProyecto() {
+      const nom = document.getElementById('txtNomProyecto').value.trim();
+      const fecha = document.getElementById('txtFechaProyecto').value;
+      const pasosInputs = document.querySelectorAll('.paso-item');
+
+      if (!nom) return alert('Ingresa el nombre del proyecto');
+
+      const pasos = [];
+      pasosInputs.forEach((inp, i) => {
+        if (inp.value.trim()) {
+          pasos.push({ id: 'p_' + Date.now() + '_' + i, nombre: inp.value.trim(), completado: false });
+        }
+      });
+
+      const payload = {
+        usuario_id: usuarioActual.username,
+        nombre_proyecto: nom,
+        fecha_limite: fecha,
+        pasos: pasos
+      };
+
+      const res = await fetch(`${API_URL}/proyectos/crear/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert('✅ Proyecto creado con éxito');
+        document.getElementById('txtNomProyecto').value = '';
+        document.getElementById('txtFechaProyecto').value = '';
+        document.getElementById('contenedorPasosProyecto').innerHTML = '<input type="text" class="input-field paso-item" placeholder="Paso 1">';
+        cargarProyectos();
+      }
+    }
+
+    async function cargarProyectos() {
+      const cont = document.getElementById('contenedorListaProyectos');
+      try {
+        const res = await fetch(`${API_URL}/proyectos/${usuarioActual.username}`);
+        const proyectos = await res.json();
+
+        if (proyectos.length === 0) {
+          cont.innerHTML = '<div class="card-box"><p style="color:#94a3b8; margin:0;">No tienes proyectos registrados.</p></div>';
+          return;
+        }
+
+        cont.innerHTML = '';
+        proyectos.forEach(p => {
+          const totalPasos = (p.pasos || []).length;
+          const completados = (p.pasos || []).filter(paso => paso.completado).length;
+          const pct = totalPasos > 0 ? Math.round((completados / totalPasos) * 100) : 0;
+
+          let htmlPasos = '';
+          (p.pasos || []).forEach(paso => {
+            htmlPasos += `
+              <label style="display:block; margin-top:8px; cursor:pointer;">
+                <input type="checkbox" ${paso.completado ? 'checked' : ''} onchange="togglePasoProyecto('${p._id}', '${paso.id}', this.checked)"> ${paso.nombre}
+              </label>
+            `;
+          });
+
+          const div = document.createElement('div');
+          div.className = 'card-box';
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="margin:0; color:var(--accent);">🚀 ${p.nombre_proyecto}</h3>
+              <button class="btn-delete" onclick="eliminarProyecto('${p._id}')">🗑️ Eliminar</button>
+            </div>
+            <p style="color:#94a3b8; font-size:0.88rem; margin:4px 0 10px 0;">Fecha Límite: <strong>${p.fecha_limite || 'Sin fecha'}</strong></p>
+            <div class="gantt-bar-bg">
+              <div class="gantt-bar-fill" style="width: ${pct}%;"></div>
+            </div>
+            <small style="color:#94a3b8;">Progreso: ${pct}% completado (${completados} de ${totalPasos} pasos)</small>
+            <div style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.05); padding-top:8px;">${htmlPasos}</div>
+          `;
+          cont.appendChild(div);
+        });
+      } catch (e) { cont.innerHTML = '<p style="color:#ef4444;">Error cargando proyectos.</p>'; }
+    }
+
+    async function togglePasoProyecto(proyectoId, pasoId, estado) {
+      await fetch(`${API_URL}/proyectos/actualizar-paso/`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ proyecto_id: proyectoId, paso_id: pasoId, completado: estado })
+      });
+      cargarProyectos();
+    }
+
+    async function eliminarProyecto(id) {
+      if (!confirm('¿Eliminar proyecto?')) return;
+      await fetch(`${API_URL}/proyectos/eliminar/${id}`, { method: 'DELETE' });
+      cargarProyectos();
+    }
+
+    // --- TAREAS ---
     function cambiarTipoTarea(tipo) {
       if (tipo === 'recurrentes') {
         document.getElementById('tabRecurrentes').classList.add('active');
@@ -508,35 +654,128 @@
       }
     }
 
-    function cambiarPestanaEntrenador(pestana) {
-      if (pestana === 'crear') {
-        document.getElementById('tabCrearBtn').classList.add('active');
-        document.getElementById('tabGestionBtn').classList.remove('active');
-        document.getElementById('secCrearRutina').style.display = 'block';
-        document.getElementById('secGestionRutinas').style.display = 'none';
+    async function crearTarea(tipo) {
+      let payload = { usuario_id: usuarioActual.username, tipo: tipo, completado: false };
+      if (tipo === 'recurrente') {
+        payload.titulo = document.getElementById('txtTituloRecurrente').value.trim();
+        payload.dia_recurrente = document.getElementById('selDiaRecurrente').value;
       } else {
-        document.getElementById('tabGestionBtn').classList.add('active');
-        document.getElementById('tabCrearBtn').classList.remove('active');
-        document.getElementById('secCrearRutina').style.display = 'none';
-        document.getElementById('secGestionRutinas').style.display = 'block';
-        cargarTodasRutinasEntrenador();
+        payload.titulo = document.getElementById('txtTituloUnica').value.trim();
+        payload.fecha_limite = document.getElementById('txtFechaUnica').value;
+      }
+
+      if (!payload.titulo) return alert('Ingresa el título de la tarea');
+
+      const res = await fetch(`${API_URL}/tareas/crear/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert('✅ Tarea guardada');
+        if (tipo === 'recurrente') document.getElementById('txtTituloRecurrente').value = '';
+        else document.getElementById('txtTituloUnica').value = '';
+        cargarTareas();
       }
     }
 
-    function cambiarModoRutina(modo) {
-      if (modo === 'video') {
-        document.getElementById('tabVideoBtn').classList.add('active');
-        document.getElementById('tabDetalleBtn').classList.remove('active');
-        document.getElementById('modoVideoForm').style.display = 'block';
-        document.getElementById('modoDetalleForm').style.display = 'none';
-      } else {
-        document.getElementById('tabDetalleBtn').classList.add('active');
-        document.getElementById('tabVideoBtn').classList.remove('active');
-        document.getElementById('modoVideoForm').style.display = 'none';
-        document.getElementById('modoDetalleForm').style.display = 'block';
+    async function cargarTareas() {
+      const contRec = document.getElementById('contenedorTareasRecurrentes');
+      const contUni = document.getElementById('contenedorTareasUnicas');
+
+      try {
+        const res = await fetch(`${API_URL}/tareas/${usuarioActual.username}`);
+        const tareas = await res.json();
+
+        contRec.innerHTML = '';
+        contUni.innerHTML = '';
+
+        tareas.forEach(t => {
+          const div = document.createElement('div');
+          div.className = 'card-box';
+          div.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
+
+          div.innerHTML = `
+            <label style="cursor:pointer; display:flex; align-items:center; gap:10px;">
+              <input type="checkbox" ${t.completado ? 'checked' : ''} onchange="toggleEstadoTarea('${t._id}', this.checked)">
+              <span style="${t.completado ? 'text-decoration:line-through; color:#64748b;' : ''}">
+                <strong>${t.titulo}</strong> ${t.tipo === 'recurrente' ? '(' + t.dia_recurrente + ')' : '(Vence: ' + (t.fecha_limite || 'Sin fecha') + ')'}
+              </span>
+            </label>
+            <button class="btn-delete" onclick="eliminarTarea('${t._id}')">🗑️</button>
+          `;
+
+          if (t.tipo === 'recurrente') contRec.appendChild(div);
+          else contUni.appendChild(div);
+        });
+      } catch (e) { console.error('Error cargando tareas', e); }
+    }
+
+    async function toggleEstadoTarea(id, estado) {
+      await fetch(`${API_URL}/tareas/estado/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ completado: estado })
+      });
+      cargarTareas();
+    }
+
+    async function eliminarTarea(id) {
+      await fetch(`${API_URL}/tareas/eliminar/${id}`, { method: 'DELETE' });
+      cargarTareas();
+    }
+
+    // --- PENSAMIENTOS ---
+    async function guardarPensamiento() {
+      const texto = document.getElementById('txtPensamiento').value.trim();
+      if (!texto) return alert('Escribe tu pensamiento');
+
+      const res = await fetch(`${API_URL}/pensamientos/crear/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ usuario_id: usuarioActual.username, texto: texto })
+      });
+
+      if (res.ok) {
+        document.getElementById('txtPensamiento').value = '';
+        cargarPensamientos();
       }
     }
 
+    async function cargarPensamientos() {
+      const cont = document.getElementById('contenedorPensamientos');
+      try {
+        const res = await fetch(`${API_URL}/pensamientos/${usuarioActual.username}`);
+        const pens = await res.json();
+
+        if (pens.length === 0) {
+          cont.innerHTML = '<div class="card-box"><p style="color:#94a3b8; margin:0;">No has guardado pensamientos aún.</p></div>';
+          return;
+        }
+
+        cont.innerHTML = '';
+        pens.forEach(p => {
+          const div = document.createElement('div');
+          div.className = 'card-box';
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <small style="color:var(--accent);">${new Date(p.fecha).toLocaleString('es-CO')}</small>
+              <button class="btn-delete" onclick="eliminarPensamiento('${p._id}')">🗑️</button>
+            </div>
+            <p style="margin:0; color:#f8fafc; white-space:pre-wrap;">${p.texto}</p>
+          `;
+          cont.appendChild(div);
+        });
+      } catch (e) { cont.innerHTML = '<p style="color:#ef4444;">Error cargando pensamientos.</p>'; }
+    }
+
+    async function eliminarPensamiento(id) {
+      await fetch(`${API_URL}/pensamientos/eliminar/${id}`, { method: 'DELETE' });
+      cargarPensamientos();
+    }
+
+    // --- RUTINAS DE ENTRENAMIENTO Y PANEL DE ENTRENADOR ---
     async function cargarRutinasCliente(clienteUsername, soloHoy = true) {
       const contenedor = document.getElementById('contenedorRutinasCliente');
       contenedor.innerHTML = '<p style="color: #94a3b8;">Cargando rutinas...</p>';
@@ -641,14 +880,9 @@
           body: JSON.stringify(payload)
         });
 
-        if (res.ok) {
-          alert('✅ Cumplimiento guardado correctamente en MongoDB Atlas.');
-        } else {
-          alert('❌ Error guardando el cumplimiento.');
-        }
-      } catch (err) {
-        alert('❌ Error de conexión con el servidor.');
-      }
+        if (res.ok) alert('✅ Cumplimiento guardado correctamente en MongoDB Atlas.');
+        else alert('❌ Error guardando el cumplimiento.');
+      } catch (err) { alert('❌ Error de conexión con el servidor.'); }
     }
 
     async function cargarClientesSelect() {
@@ -672,9 +906,7 @@
             selectEdit.appendChild(opt2);
           }
         });
-      } catch (err) {
-        console.error('Error cargando clientes', err);
-      }
+      } catch (err) { console.error('Error cargando clientes', err); }
     }
 
     async function cargarTodasRutinasEntrenador() {
@@ -710,8 +942,35 @@
           `;
           contenedor.appendChild(div);
         });
-      } catch (err) {
-        contenedor.innerHTML = '<p style="color: #ef4444;">Error consultando las rutinas.</p>';
+      } catch (err) { contenedor.innerHTML = '<p style="color: #ef4444;">Error consultando las rutinas.</p>'; }
+    }
+
+    function cambiarPestanaEntrenador(pestana) {
+      if (pestana === 'crear') {
+        document.getElementById('tabCrearBtn').classList.add('active');
+        document.getElementById('tabGestionBtn').classList.remove('active');
+        document.getElementById('secCrearRutina').style.display = 'block';
+        document.getElementById('secGestionRutinas').style.display = 'none';
+      } else {
+        document.getElementById('tabGestionBtn').classList.add('active');
+        document.getElementById('tabCrearBtn').classList.remove('active');
+        document.getElementById('secCrearRutina').style.display = 'none';
+        document.getElementById('secGestionRutinas').style.display = 'block';
+        cargarTodasRutinasEntrenador();
+      }
+    }
+
+    function cambiarModoRutina(modo) {
+      if (modo === 'video') {
+        document.getElementById('tabVideoBtn').classList.add('active');
+        document.getElementById('tabDetalleBtn').classList.remove('active');
+        document.getElementById('modoVideoForm').style.display = 'block';
+        document.getElementById('modoDetalleForm').style.display = 'none';
+      } else {
+        document.getElementById('tabDetalleBtn').classList.add('active');
+        document.getElementById('tabVideoBtn').classList.remove('active');
+        document.getElementById('modoVideoForm').style.display = 'none';
+        document.getElementById('modoDetalleForm').style.display = 'block';
       }
     }
 
@@ -736,10 +995,7 @@
       const titulo = document.getElementById('videoNombreRutina').value.trim();
       const enlace = document.getElementById('videoUrlRutina').value.trim();
 
-      if (!titulo || !enlace) {
-        alert('Completa los campos');
-        return;
-      }
+      if (!titulo || !enlace) return alert('Completa los campos');
 
       const res = await fetch(`${API_URL}/rutinas/crear-tipo-jhon/`, {
         method: 'POST',
@@ -748,7 +1004,7 @@
       });
 
       if (res.ok) {
-        alert('✅ Rutina de Video asignada con éxito');
+        alert('✅ Rutina asignada con éxito');
         document.getElementById('videoNombreRutina').value = '';
         document.getElementById('videoUrlRutina').value = '';
       }
@@ -774,10 +1030,7 @@
         }
       });
 
-      if (ejercicios.length === 0) {
-        alert('Agrega al menos un ejercicio');
-        return;
-      }
+      if (ejercicios.length === 0) return alert('Agrega al menos un ejercicio');
 
       const res = await fetch(`${API_URL}/rutinas/crear-tipo-hermana/`, {
         method: 'POST',
@@ -884,7 +1137,6 @@
     }
 
     function cerrarSesion() {
-      localStorage.clear();
       document.getElementById('loginSection').style.display = 'block';
       document.getElementById('appSection').style.display = 'none';
       document.getElementById('usernameInput').value = '';
