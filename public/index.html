@@ -146,6 +146,13 @@
       color: var(--accent);
     }
 
+    .exercise-row {
+      background: #0f172a;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--accent);
+    }
     .reps-container { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
     .rep-checkbox-box {
       background: #1e293b;
@@ -156,6 +163,29 @@
       align-items: center;
       gap: 6px;
       font-size: 0.85rem;
+    }
+
+    .btn-delete { background: var(--red); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+    .btn-edit { background: var(--accent); color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; margin-right: 6px; }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 16px;
+      max-width: 550px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
     @media (max-width: 768px) {
@@ -263,43 +293,139 @@
         </div>
       </div>
 
-      <!-- VISTA ENTRENADOR -->
+      <!-- VISTA ENTRENADOR (COMPLETA) -->
       <div id="view-panel-entrenador" class="view-section">
         <div class="header-bar">
           <h2 style="margin:0;">📋 Panel de Entrenador</h2>
         </div>
-        <div class="card-box">
-          <label>Seleccionar Alumno:</label>
-          <select id="selectCliente" class="input-field"><option value="">Cargando clientes...</option></select>
-          
-          <label>Día de la Semana:</label>
-          <select id="selectDia" class="input-field">
-            <option value="Monday">Lunes</option>
-            <option value="Tuesday">Martes</option>
-            <option value="Wednesday">Miércoles</option>
-            <option value="Thursday">Jueves</option>
-            <option value="Friday">Viernes</option>
-            <option value="Saturday">Sábado</option>
-            <option value="Sunday">Domingo</option>
-          </select>
 
-          <label>Título de la Rutina (Video):</label>
-          <input type="text" id="videoNombreRutina" class="input-field" placeholder="Ej. GLUTES & HAMSTRINGS">
-
-          <label>Enlace del Video de YouTube:</label>
-          <input type="text" id="videoUrlRutina" class="input-field" placeholder="Ej. https://www.youtube.com/watch?v=...">
-
-          <button class="btn-action" style="background:var(--green); color:white;" onclick="guardarRutinaVideo()">Asignar Rutina de Video</button>
+        <div class="tab-container">
+          <div id="tabCrearBtn" class="tab-btn active" onclick="cambiarPestanaEntrenador('crear')">➕ Asignar Nueva Rutina</div>
+          <div id="tabGestionBtn" class="tab-btn" onclick="cambiarPestanaEntrenador('gestion')">⚙️ Modificar / Eliminar Rutinas</div>
         </div>
+
+        <!-- SECCIÓN 1: CREAR -->
+        <div id="secCrearRutina" class="card-box">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+              <label>Asignar a Alumno/Cliente:</label>
+              <select id="selectCliente" class="input-field"><option value="">Cargando clientes...</option></select>
+            </div>
+            <div>
+              <label>Día de la Semana:</label>
+              <select id="selectDia" class="input-field">
+                <option value="Monday">Lunes</option>
+                <option value="Tuesday">Martes</option>
+                <option value="Wednesday">Miércoles</option>
+                <option value="Thursday">Jueves</option>
+                <option value="Friday">Viernes</option>
+                <option value="Saturday">Sábado</option>
+                <option value="Sunday">Domingo</option>
+              </select>
+            </div>
+          </div>
+
+          <label>Modalidad de Rutina:</label>
+          <div class="tab-container">
+            <div id="tabVideoBtn" class="tab-btn active" onclick="cambiarModoRutina('video')">📹 Modo 1: Enlace Directo de Video</div>
+            <div id="tabDetalleBtn" class="tab-btn" onclick="cambiarModoRutina('detalle')">📝 Modo 2: Múltiples Ejercicios & Series</div>
+          </div>
+
+          <div id="modoVideoForm">
+            <label>Título / Nombre de la Rutina:</label>
+            <input type="text" id="videoNombreRutina" class="input-field" placeholder="Ej. GLUTES & HAMSTRINGS">
+
+            <label>Enlace del Video de YouTube:</label>
+            <input type="text" id="videoUrlRutina" class="input-field" placeholder="Ej. https://www.youtube.com/watch?v=...">
+
+            <button class="btn-action" style="background: var(--green); color: white;" onclick="guardarRutinaVideo()">Guardar y Asignar Rutina (Video)</button>
+          </div>
+
+          <div id="modoDetalleForm" style="display: none;">
+            <label>Título General de la Rutina:</label>
+            <input type="text" id="tituloRutinaDetalle" class="input-field" placeholder="Ej. Hipertrofia Pierna & Glúteo">
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+            <h4>Ejercicios de la Rutina</h4>
+            <div id="contenedorEjercicios">
+              <div class="exercise-row">
+                <input type="text" class="input-field ej-nombre" placeholder="Nombre del Ejercicio (Ej. Sentadilla Búlgara)" style="margin-bottom:8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                  <input type="text" class="input-field ej-peso" placeholder="Peso (Ej. 12 kg)">
+                  <input type="number" class="input-field ej-reps" placeholder="N° Series" value="4">
+                  <input type="text" class="input-field ej-obs" placeholder="Observaciones">
+                </div>
+              </div>
+            </div>
+
+            <button type="button" onclick="agregarFilaEjercicio()" style="background: #334155; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 20px;">+ Agregar Otro Ejercicio</button>
+            <br>
+            <button class="btn-action" style="background: var(--green); color: white;" onclick="guardarRutinaDetallada()">Guardar y Asignar Rutina (Detallada)</button>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: GESTIONAR -->
+        <div id="secGestionRutinas" class="card-box" style="display: none;">
+          <h4 style="color: var(--accent);">Gestión de Rutinas Asignadas</h4>
+          <div id="contenedorTodasRutinas">
+            <p style="color: #94a3b8;">Cargando lista de rutinas...</p>
+          </div>
+        </div>
+
       </div>
 
     </div>
 
   </div>
 
+  <!-- MODAL PARA EDICIÓN DE RUTINA -->
+  <div id="modalEdicion" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="color:var(--accent); margin-top:0;">✏️ Modificar Rutina</h3>
+      <input type="hidden" id="editRutinaId">
+      <input type="hidden" id="editTipoRutina">
+
+      <label>Alumno:</label>
+      <select id="editCliente" class="input-field"></select>
+
+      <label>Día de la Semana:</label>
+      <select id="editDia" class="input-field">
+        <option value="Monday">Lunes</option>
+        <option value="Tuesday">Martes</option>
+        <option value="Wednesday">Miércoles</option>
+        <option value="Thursday">Jueves</option>
+        <option value="Friday">Viernes</option>
+        <option value="Saturday">Sábado</option>
+        <option value="Sunday">Domingo</option>
+      </select>
+
+      <div id="camposEditVideo" style="display:none;">
+        <label>Título de la Rutina:</label>
+        <input type="text" id="editNombreVideo" class="input-field">
+        <label>Enlace de Video:</label>
+        <input type="text" id="editUrlVideo" class="input-field">
+      </div>
+
+      <div id="camposEditDetalle" style="display:none;">
+        <label>Título General:</label>
+        <input type="text" id="editTituloDetalle" class="input-field">
+        <h4>Ejercicios</h4>
+        <div id="contenedorEditEjercicios"></div>
+        <button type="button" onclick="agregarFilaEjercicioEdit()" style="background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 15px;">+ Agregar Ejercicio</button>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:15px;">
+        <button class="btn-action" style="background:var(--green); color:white;" onclick="guardarEdicionRutina()">💾 Guardar Cambios</button>
+        <button class="btn-action" style="background:#334155; color:white;" onclick="cerrarModalEdicion()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = window.location.hostname.includes('vercel.app') ? '/api' : 'http://127.0.0.1:8000';
     let usuarioActual = null;
+    let listaRutinasGlobal = [];
 
     async function autenticar() {
       const user = document.getElementById('usernameInput').value.trim();
@@ -337,6 +463,7 @@
           document.getElementById('navEntrenadorOptions').style.display = 'block';
           navegarA('panel-entrenador');
           cargarClientesSelect();
+          cargarTodasRutinasEntrenador();
         } else {
           document.getElementById('navClienteOptions').style.display = 'block';
           document.getElementById('navEntrenadorOptions').style.display = 'none';
@@ -378,6 +505,35 @@
         document.getElementById('tabRecurrentes').classList.remove('active');
         document.getElementById('secRecurrentes').style.display = 'none';
         document.getElementById('secUnicas').style.display = 'block';
+      }
+    }
+
+    function cambiarPestanaEntrenador(pestana) {
+      if (pestana === 'crear') {
+        document.getElementById('tabCrearBtn').classList.add('active');
+        document.getElementById('tabGestionBtn').classList.remove('active');
+        document.getElementById('secCrearRutina').style.display = 'block';
+        document.getElementById('secGestionRutinas').style.display = 'none';
+      } else {
+        document.getElementById('tabGestionBtn').classList.add('active');
+        document.getElementById('tabCrearBtn').classList.remove('active');
+        document.getElementById('secCrearRutina').style.display = 'none';
+        document.getElementById('secGestionRutinas').style.display = 'block';
+        cargarTodasRutinasEntrenador();
+      }
+    }
+
+    function cambiarModoRutina(modo) {
+      if (modo === 'video') {
+        document.getElementById('tabVideoBtn').classList.add('active');
+        document.getElementById('tabDetalleBtn').classList.remove('active');
+        document.getElementById('modoVideoForm').style.display = 'block';
+        document.getElementById('modoDetalleForm').style.display = 'none';
+      } else {
+        document.getElementById('tabDetalleBtn').classList.add('active');
+        document.getElementById('tabVideoBtn').classList.remove('active');
+        document.getElementById('modoVideoForm').style.display = 'none';
+        document.getElementById('modoDetalleForm').style.display = 'block';
       }
     }
 
@@ -443,7 +599,6 @@
           contenedor.appendChild(div);
         });
 
-        // Botón verde para guardar cumplimiento
         const btnGuardar = document.createElement('button');
         btnGuardar.className = 'btn-action';
         btnGuardar.style.cssText = 'background: var(--green); color: white; margin-top: 15px;';
@@ -501,16 +656,78 @@
         const res = await fetch(`${API_URL}/usuarios/`);
         const usuarios = await res.json();
         const select = document.getElementById('selectCliente');
+        const selectEdit = document.getElementById('editCliente');
         select.innerHTML = '';
+        if(selectEdit) selectEdit.innerHTML = '';
+
         usuarios.filter(u => u.rol === 'cliente').forEach(c => {
           const opt = document.createElement('option');
           opt.value = c.username;
           opt.innerText = `${c.nombre_completo} (${c.username})`;
           select.appendChild(opt);
+          if(selectEdit) {
+            const opt2 = document.createElement('option');
+            opt2.value = c.username;
+            opt2.innerText = `${c.nombre_completo} (${c.username})`;
+            selectEdit.appendChild(opt2);
+          }
         });
       } catch (err) {
         console.error('Error cargando clientes', err);
       }
+    }
+
+    async function cargarTodasRutinasEntrenador() {
+      const contenedor = document.getElementById('contenedorTodasRutinas');
+      contenedor.innerHTML = '<p style="color: #94a3b8;">Cargando rutinas del sistema...</p>';
+
+      try {
+        const res = await fetch(`${API_URL}/rutinas/todas/`);
+        listaRutinasGlobal = await res.json();
+
+        if (listaRutinasGlobal.length === 0) {
+          contenedor.innerHTML = '<p style="color: #94a3b8;">No hay rutinas guardadas en el sistema.</p>';
+          return;
+        }
+
+        contenedor.innerHTML = '';
+        listaRutinasGlobal.forEach(r => {
+          const div = document.createElement('div');
+          div.className = 'card-box';
+          const titulo = r.tipo === 'directa_video' ? r.nombre_rutina : r.titulo_rutina;
+
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong style="color:var(--accent); font-size:1.05rem;">${titulo}</strong>
+                <p style="margin:4px 0; color:#94a3b8; font-size:0.85rem;">Alumno: <strong>${r.cliente_id}</strong> | Día: <strong>${r.dia_semana}</strong> | Tipo: ${r.tipo}</p>
+              </div>
+              <div>
+                <button class="btn-edit" onclick="abrirModalEdicion('${r._id}')">✏️ Modificar</button>
+                <button class="btn-delete" onclick="eliminarRutina('${r._id}')">🗑️ Eliminar</button>
+              </div>
+            </div>
+          `;
+          contenedor.appendChild(div);
+        });
+      } catch (err) {
+        contenedor.innerHTML = '<p style="color: #ef4444;">Error consultando las rutinas.</p>';
+      }
+    }
+
+    function agregarFilaEjercicio() {
+      const contenedor = document.getElementById('contenedorEjercicios');
+      const div = document.createElement('div');
+      div.className = 'exercise-row';
+      div.innerHTML = `
+        <input type="text" class="input-field ej-nombre" placeholder="Nombre del Ejercicio" style="margin-bottom:8px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+          <input type="text" class="input-field ej-peso" placeholder="Peso (Ej. 10 kg)">
+          <input type="number" class="input-field ej-reps" placeholder="N° Series" value="4">
+          <input type="text" class="input-field ej-obs" placeholder="Observaciones">
+        </div>
+      `;
+      contenedor.appendChild(div);
     }
 
     async function guardarRutinaVideo() {
@@ -531,13 +748,143 @@
       });
 
       if (res.ok) {
-        alert('✅ Rutina asignada con éxito');
+        alert('✅ Rutina de Video asignada con éxito');
         document.getElementById('videoNombreRutina').value = '';
         document.getElementById('videoUrlRutina').value = '';
       }
     }
 
+    async function guardarRutinaDetallada() {
+      const cliente = document.getElementById('selectCliente').value;
+      const dia = document.getElementById('selectDia').value;
+      const titulo = document.getElementById('tituloRutinaDetalle').value.trim() || 'Rutina General';
+      
+      const filas = document.querySelectorAll('.exercise-row');
+      const ejercicios = [];
+
+      filas.forEach(f => {
+        const nom = f.querySelector('.ej-nombre').value.trim();
+        if (nom) {
+          ejercicios.push({
+            nombre_ejercicio: nom,
+            peso: f.querySelector('.ej-peso').value.trim() || 'Sin peso',
+            numero_repeticiones: parseInt(f.querySelector('.ej-reps').value) || 4,
+            observaciones: f.querySelector('.ej-obs').value.trim() || ''
+          });
+        }
+      });
+
+      if (ejercicios.length === 0) {
+        alert('Agrega al menos un ejercicio');
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/rutinas/crear-tipo-hermana/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cliente_id: cliente, dia_semana: dia, titulo_rutina: titulo, ejercicios: ejercicios })
+      });
+
+      if (res.ok) {
+        alert('✅ Rutina Detallada asignada con éxito');
+        document.getElementById('tituloRutinaDetalle').value = '';
+      }
+    }
+
+    function abrirModalEdicion(rutinaId) {
+      const rutina = listaRutinasGlobal.find(r => r._id === rutinaId);
+      if (!rutina) return;
+
+      document.getElementById('editRutinaId').value = rutina._id;
+      document.getElementById('editTipoRutina').value = rutina.tipo;
+      document.getElementById('editCliente').value = rutina.cliente_id;
+      document.getElementById('editDia').value = rutina.dia_semana;
+
+      if (rutina.tipo === 'directa_video') {
+        document.getElementById('camposEditVideo').style.display = 'block';
+        document.getElementById('camposEditDetalle').style.display = 'none';
+        document.getElementById('editNombreVideo').value = rutina.nombre_rutina || '';
+        document.getElementById('editUrlVideo').value = rutina.enlace_video || '';
+      } else {
+        document.getElementById('camposEditVideo').style.display = 'none';
+        document.getElementById('camposEditDetalle').style.display = 'block';
+        document.getElementById('editTituloDetalle').value = rutina.titulo_rutina || '';
+        const contEj = document.getElementById('contenedorEditEjercicios');
+        contEj.innerHTML = '';
+        (rutina.ejercicios || []).forEach(ej => {
+          agregarFilaEjercicioEdit(ej.nombre_ejercicio, ej.peso, ej.numero_repeticiones, ej.observaciones);
+        });
+      }
+      document.getElementById('modalEdicion').style.display = 'flex';
+    }
+
+    function agregarFilaEjercicioEdit(nombre = '', peso = '', reps = 4, obs = '') {
+      const contEj = document.getElementById('contenedorEditEjercicios');
+      const div = document.createElement('div');
+      div.className = 'exercise-row edit-ej-row';
+      div.innerHTML = `
+        <input type="text" class="input-field edit-ej-nombre" placeholder="Ejercicio" value="${nombre}" style="margin-bottom:8px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+          <input type="text" class="input-field edit-ej-peso" placeholder="Peso" value="${peso}">
+          <input type="number" class="input-field edit-ej-reps" placeholder="Series" value="${reps}">
+          <input type="text" class="input-field edit-ej-obs" placeholder="Obs" value="${obs}">
+        </div>
+      `;
+      contEj.appendChild(div);
+    }
+
+    function cerrarModalEdicion() { document.getElementById('modalEdicion').style.display = 'none'; }
+
+    async function guardarEdicionRutina() {
+      const id = document.getElementById('editRutinaId').value;
+      const tipo = document.getElementById('editTipoRutina').value;
+      const payload = {
+        cliente_id: document.getElementById('editCliente').value,
+        dia_semana: document.getElementById('editDia').value,
+        tipo: tipo
+      };
+
+      if (tipo === 'directa_video') {
+        payload.nombre_rutina = document.getElementById('editNombreVideo').value.trim();
+        payload.enlace_video = document.getElementById('editUrlVideo').value.trim();
+      } else {
+        payload.titulo_rutina = document.getElementById('editTituloDetalle').value.trim();
+        const filas = document.querySelectorAll('.edit-ej-row');
+        payload.ejercicios = [];
+        filas.forEach(f => {
+          payload.ejercicios.push({
+            nombre_ejercicio: f.querySelector('.edit-ej-nombre').value.trim(),
+            peso: f.querySelector('.edit-ej-peso').value.trim() || 'Sin peso',
+            numero_repeticiones: parseInt(f.querySelector('.edit-ej-reps').value) || 4,
+            observaciones: f.querySelector('.edit-ej-obs').value.trim() || ''
+          });
+        });
+      }
+
+      const res = await fetch(`${API_URL}/rutinas/editar/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert('✅ Rutina actualizada con éxito');
+        cerrarModalEdicion();
+        cargarTodasRutinasEntrenador();
+      }
+    }
+
+    async function eliminarRutina(id) {
+      if (!confirm('¿Eliminar esta rutina?')) return;
+      const res = await fetch(`${API_URL}/rutinas/eliminar/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        alert('🗑️ Rutina eliminada');
+        cargarTodasRutinasEntrenador();
+      }
+    }
+
     function cerrarSesion() {
+      localStorage.clear();
       document.getElementById('loginSection').style.display = 'block';
       document.getElementById('appSection').style.display = 'none';
       document.getElementById('usernameInput').value = '';
