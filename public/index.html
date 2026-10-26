@@ -146,13 +146,6 @@
       color: var(--accent);
     }
 
-    .exercise-row {
-      background: #0f172a;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-      border-left: 4px solid var(--accent);
-    }
     .reps-container { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
     .rep-checkbox-box {
       background: #1e293b;
@@ -419,7 +412,12 @@
 
           if (r.tipo === 'directa_video') {
             div.innerHTML = `
-              <h4 style="margin:0; color:var(--accent);">📹 Rutina: "${r.nombre_rutina}" (${r.dia_semana})</h4>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="margin:0; color:var(--accent);">📹 Rutina: "${r.nombre_rutina}" (${r.dia_semana})</h4>
+                <label style="color:white; font-size:0.9rem; cursor:pointer;">
+                  <input type="checkbox" class="chk-cumplimiento" data-tarea="Video: ${r.nombre_rutina}"> Marcar visto
+                </label>
+              </div>
               <a href="${r.enlace_video}" target="_blank" style="display:inline-block; margin-top:12px; background: var(--pink); color:white; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:bold;">▶️ Ver Video en YouTube</a>
             `;
           } else if (r.tipo === 'detallada') {
@@ -428,7 +426,10 @@
               let casillasReps = '';
               const reps = ej.numero_repeticiones || 4;
               for (let i = 1; i <= reps; i++) {
-                casillasReps += `<div class="rep-checkbox-box"><input type="checkbox"> Serie ${i}</div>`;
+                casillasReps += `
+                  <div class="rep-checkbox-box">
+                    <input type="checkbox" class="chk-cumplimiento" data-tarea="${ej.nombre_ejercicio} - Serie ${i}"> Serie ${i}
+                  </div>`;
               }
               htmlEjercicios += `
                 <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top:8px;">
@@ -442,8 +443,56 @@
           contenedor.appendChild(div);
         });
 
+        // Botón verde para guardar cumplimiento
+        const btnGuardar = document.createElement('button');
+        btnGuardar.className = 'btn-action';
+        btnGuardar.style.cssText = 'background: var(--green); color: white; margin-top: 15px;';
+        btnGuardar.innerText = '💾 Guardar Cumplimiento de Hoy en MongoDB';
+        btnGuardar.onclick = enviarCumplimientoRutina;
+        contenedor.appendChild(btnGuardar);
+
       } catch (err) {
         contenedor.innerHTML = '<p style="color: #ef4444;">Error consultando las rutinas.</p>';
+      }
+    }
+
+    async function enviarCumplimientoRutina() {
+      const checkboxes = document.querySelectorAll('.chk-cumplimiento');
+      if (checkboxes.length === 0) {
+        alert('No hay tareas o series registradas para guardar.');
+        return;
+      }
+
+      const tareas = {};
+      checkboxes.forEach(chk => {
+        const nombreTarea = chk.getAttribute('data-tarea');
+        tareas[nombreTarea] = { completado: chk.checked };
+      });
+
+      const fechaHoy = new Date().toISOString().split('T')[0];
+      const diaActual = document.getElementById('txtDiaHoy').innerText;
+
+      const payload = {
+        usuario_id: usuarioActual ? usuarioActual.username : "jhoncanasto",
+        fecha: fechaHoy,
+        dia_semana: diaActual,
+        tareas: tareas
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/guardar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          alert('✅ Cumplimiento guardado correctamente en MongoDB Atlas.');
+        } else {
+          alert('❌ Error guardando el cumplimiento.');
+        }
+      } catch (err) {
+        alert('❌ Error de conexión con el servidor.');
       }
     }
 
