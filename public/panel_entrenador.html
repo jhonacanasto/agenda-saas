@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrenador - SaaS Agenda</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; padding: 30px; }
+    .card { background: #1e293b; padding: 20px; border-radius: 12px; max-width: 600px; margin: 0 auto; }
+    select, input { width: 100%; padding: 10px; margin-bottom: 12px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; }
+    button { padding: 12px; background: #10b981; border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="color:#38bdf8;">📋 Panel de Entrenador</h2>
+      <button onclick="logout()" style="width:auto; background:#ef4444; padding:6px 12px;">Cerrar Sesión</button>
+    </div>
+    <label>Alumno:</label>
+    <select id="selCliente"><option value="">Cargando...</option></select>
+    
+    <label>Día de la semana:</label>
+    <select id="selDia">
+      <option value="Sunday">Domingo</option>
+      <option value="Monday">Lunes</option>
+      <option value="Tuesday">Martes</option>
+      <option value="Wednesday">Miércoles</option>
+      <option value="Thursday">Jueves</option>
+      <option value="Friday">Viernes</option>
+      <option value="Saturday">Sábado</option>
+    </select>
+
+    <label>Nombre de la Rutina:</label>
+    <input type="text" id="txtNom" placeholder="Ej. Rutina de Abdominales">
+
+    <label>Enlace del Video de YouTube:</label>
+    <input type="text" id="txtUrl" placeholder="Ej. https://www.youtube.com/watch?v=...">
+
+    <button onclick="guardar()">Asignar Rutina</button>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname.includes('vercel.app') ? '/api' : 'http://127.0.0.1:8000';
+
+    async function cargarClientes() {
+      const res = await fetch(`${API_URL}/usuarios/`);
+      const users = await res.json();
+      const sel = document.getElementById('selCliente');
+      sel.innerHTML = '';
+      users.filter(u => u.rol === 'cliente').forEach(c => {
+        sel.innerHTML += `<option value="${c.username}">${c.nombre_completo} (${c.username})</option>`;
+      });
+    }
+
+    async function guardar() {
+      const cli = document.getElementById('selCliente').value;
+      const dia = document.getElementById('selDia').value;
+      const nom = document.getElementById('txtNom').value;
+      const url = document.getElementById('txtUrl').value;
+
+      if (!nom || !url) return alert('Completa los campos');
+
+      const res = await fetch(`${API_URL}/rutinas/crear-tipo-jhon/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ cliente_id: cli, dia_semana: dia, nombre_rutina: nom, enlace_video: url })
+      });
+
+      if (res.ok) alert('✅ Rutina asignada con éxito');
+    }
+
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+    cargarClientes();
+  </script>
+</body>
+</html>

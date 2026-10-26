@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyectos - SaaS Agenda</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; display: flex; min-height: 100vh; }
+    .sidebar { width: 220px; background: #111827; padding: 20px; border-right: 1px solid #1e293b; display:flex; flex-direction:column; }
+    .nav-a { display: block; padding: 12px; color: #94a3b8; text-decoration: none; border-radius: 8px; margin-bottom: 6px; font-weight: 600; }
+    .nav-a.active, .nav-a:hover { background: rgba(56,189,248,0.15); color: #38bdf8; }
+    .content { flex: 1; padding: 30px; }
+    .card { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 15px; }
+    @media(max-width: 768px) { body { flex-direction: column; } .sidebar { width: 100%; box-sizing:border-box; } }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h3 style="color:#38bdf8;">⚡ Agenda SaaS</h3>
+    <a href="ejercicios.html" class="nav-a">🏋️‍♂️ Ejercicios</a>
+    <a href="proyectos.html" class="nav-a active">📊 Proyectos</a>
+    <a href="tareas.html" class="nav-a">✅ Tareas</a>
+    <a href="pensamientos.html" class="nav-a">🧠 Pensamientos</a>
+  </div>
+
+  <div class="content">
+    <h2>📊 Mis Proyectos Personales</h2>
+    <div class="card">
+      <h3 style="color:#38bdf8; margin-top:0;">🚀 Proyecto: Sistema SaaS Multi-Rol</h3>
+      <p style="color:#94a3b8;">Límite: 2026-10-30</p>
+      <div style="background:#334155; height:12px; border-radius:6px; overflow:hidden;">
+        <div style="background:#10b981; width:75%; height:100%;"></div>
+      </div>
+      <small style="color:#94a3b8;">Progreso: 75% completado</small>
+    </div>
+  </div>
+</body>
+</html>
