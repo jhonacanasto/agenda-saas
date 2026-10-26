@@ -60,7 +60,6 @@
     /* LAYOUT DASHBOARD MAIN */
     .app-layout {
       display: none;
-      display: flex;
       min-height: 100vh;
     }
 
@@ -220,25 +219,14 @@
       <div id="view-proyectos" class="view-section">
         <div class="header-bar">
           <h2 style="margin:0;">📊 Proyectos Personales</h2>
-          <button onclick="mostrarModalNuevoProyecto()" style="background:var(--accent); color:#0f172a; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:bold;">+ Nuevo Proyecto</button>
         </div>
-
-        <div id="contenedorProyectos">
-          <div class="card-box">
-            <h3 style="margin:0 0 5px 0; color:var(--accent);">🚀 Proyecto: Sistema SaaS Multi-Rol</h3>
-            <p style="color:#94a3b8; font-size:0.9rem; margin:0 0 10px 0;">Fecha Límite: <strong>2026-10-30</strong></p>
-            
-            <div class="gantt-bar-bg">
-              <div class="gantt-bar-fill" style="width: 66%;"></div>
-            </div>
-            <small style="color: #94a3b8;">Avance: 66% completado (2 de 3 subtareas)</small>
-
-            <div style="margin-top:15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top:10px;">
-              <label style="display:block; margin-bottom:5px;"><input type="checkbox" checked> Configurar Vercel & MongoDB</label>
-              <label style="display:block; margin-bottom:5px;"><input type="checkbox" checked> Diseñar Menú Sidebar</label>
-              <label style="display:block; margin-bottom:5px;"><input type="checkbox"> Integrar endpoints de proyectos</label>
-            </div>
+        <div class="card-box">
+          <h3 style="margin:0 0 5px 0; color:var(--accent);">🚀 Proyecto: Sistema SaaS Multi-Rol</h3>
+          <p style="color:#94a3b8; font-size:0.9rem; margin:0 0 10px 0;">Fecha Límite: <strong>2026-10-30</strong></p>
+          <div class="gantt-bar-bg">
+            <div class="gantt-bar-fill" style="width: 75%;"></div>
           </div>
+          <small style="color: #94a3b8;">Avance: 75% completado</small>
         </div>
       </div>
 
@@ -247,50 +235,28 @@
         <div class="header-bar">
           <h2 style="margin:0;">✅ Tareas Pendientes</h2>
         </div>
-
         <div class="tab-container">
-          <div id="tabRecurrentes" class="tab-btn active" onclick="cambiarTipoTarea('recurrentes')">🔄 Tareas Recurrentes (Semanales)</div>
-          <div id="tabUnicas" class="tab-btn" onclick="cambiarTipoTarea('unicas')">📌 Tareas Únicas (Fecha Fija)</div>
+          <div id="tabRecurrentes" class="tab-btn active" onclick="cambiarTipoTarea('recurrentes')">🔄 Tareas Recurrentes</div>
+          <div id="tabUnicas" class="tab-btn" onclick="cambiarTipoTarea('unicas')">📌 Tareas Únicas</div>
         </div>
-
-        <!-- RECURRENTES -->
-        <div id="secRecurrentes">
-          <div class="card-box">
-            <h4 style="color:var(--accent); margin-top:0;">Crear Tarea Recurrente</h4>
-            <input type="text" id="txtTareaRecurrente" class="input-field" placeholder="Título de la tarea (Ej. Revisión de base de datos)">
-            <label>Día de la semana:</label>
-            <select id="selDiaRecurrente">
-              <option value="Monday">Lunes</option>
-              <option value="Tuesday">Martes</option>
-              <option value="Wednesday">Miércoles</option>
-              <option value="Thursday">Jueves</option>
-              <option value="Friday">Viernes</option>
-            </select>
-            <button class="btn-action" style="background:var(--green); color:white;" onclick="crearTarea('recurrente')">Agregar Tarea Recurrente</button>
-          </div>
+        <div id="secRecurrentes" class="card-box">
+          <h4 style="color:var(--accent); margin-top:0;">Tareas Recurrentes Semanales</h4>
+          <p style="color:#94a3b8;">Gestiona tus tareas recurrentes aquí.</p>
         </div>
-
-        <!-- ÚNICAS -->
-        <div id="secUnicas" style="display:none;">
-          <div class="card-box">
-            <h4 style="color:var(--accent); margin-top:0;">Crear Tarea Única</h4>
-            <input type="text" id="txtTareaUnica" class="input-field" placeholder="Título de la tarea (Ej. Pagar dominio Vercel)">
-            <label>Fecha Límite:</label>
-            <input type="date" id="txtFechaUnica" class="input-field">
-            <button class="btn-action" style="background:var(--green); color:white;" onclick="crearTarea('unica')">Agregar Tarea Única</button>
-          </div>
+        <div id="secUnicas" class="card-box" style="display:none;">
+          <h4 style="color:var(--accent); margin-top:0;">Tareas con Fecha Fija</h4>
+          <p style="color:#94a3b8;">Gestiona tus tareas únicas con fecha límite.</p>
         </div>
-
       </div>
 
       <!-- VISTA 4: PENSAMIENTOS -->
       <div id="view-pensamientos" class="view-section">
         <div class="header-bar">
-          <h2 style="margin:0;">🧠 Bitácora de Pensamientos (Journaling)</h2>
+          <h2 style="margin:0;">🧠 Bitácora de Pensamientos</h2>
         </div>
         <div class="card-box">
-          <textarea style="width: 100%; height: 120px; background: #0f172a; color: white; border-radius: 8px; padding: 12px; border: 1px solid #334155;" placeholder="Escribe tus reflexiones o ideas del día..."></textarea>
-          <button class="btn-action" style="margin-top: 10px; width: auto; padding: 10px 20px;">Guardar Pensamiento</button>
+          <textarea style="width: 100%; height: 120px; background: #0f172a; color: white; border-radius: 8px; padding: 12px; border: 1px solid #334155;" placeholder="Escribe tus reflexiones..."></textarea>
+          <button class="btn-action" style="margin-top: 10px; width: auto; padding: 10px 20px;">Guardar Nota</button>
         </div>
       </div>
 
@@ -299,7 +265,6 @@
         <div class="header-bar">
           <h2 style="margin:0;">📋 Panel de Entrenador</h2>
         </div>
-        <p style="color:#94a3b8;">Utiliza el selector para asignar rutinas a tus alumnos.</p>
         <div class="card-box">
           <label>Seleccionar Alumno:</label>
           <select id="selectCliente"><option value="">Cargando clientes...</option></select>
@@ -362,13 +327,22 @@
       }
     }
 
-    function navegarA(idVista, btn) {
+    function navegarA(idVista, btnElement) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
       const target = document.getElementById('view-' + idVista);
       if (target) target.classList.add('active');
-      if (btn) btn.classList.add('active');
+      
+      if (btnElement) {
+        btnElement.classList.add('active');
+      } else {
+        document.querySelectorAll('.nav-item').forEach(item => {
+          if (item.getAttribute('onclick')?.includes(idVista)) {
+            item.classList.add('active');
+          }
+        });
+      }
     }
 
     function cambiarTipoTarea(tipo) {
@@ -402,7 +376,10 @@
         document.getElementById('txtDiaHoy').innerText = diaTxt;
 
         if (!rutinas || rutinas.length === 0) {
-          contenedor.innerHTML = `<div class="card-box"><p style="color:#94a3b8; margin:0;">ℹ️ No tienes rutinas asignadas para ${soloHoy ? diaTxt : 'esta semana'}.</p></div>`;
+          contenedor.innerHTML = `
+            <div class="card-box" style="text-align: center; border: 1px dashed #334155;">
+              <p style="color: #94a3b8; margin: 0;">ℹ️ No tienes rutinas asignadas para ${soloHoy ? 'el día de hoy (' + diaTxt + ')' : 'esta semana'}.</p>
+            </div>`;
           return;
         }
 
@@ -410,7 +387,31 @@
         rutinas.forEach(r => {
           const div = document.createElement('div');
           div.className = 'card-box';
-          div.innerHTML = `<h4 style="color:var(--accent);">${r.nombre_rutina || r.titulo_rutina} (${r.dia_semana})</h4>`;
+
+          if (r.tipo === 'directa_video') {
+            div.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="margin:0; color:var(--accent);">📹 Rutina: "${r.nombre_rutina}" (${r.dia_semana})</h4>
+              </div>
+              <a href="${r.enlace_video}" target="_blank" style="display:inline-block; margin-top:12px; background: var(--pink); color:white; padding:8px 16px; border-radius:6px; text-decoration:none; font-weight:bold;">▶️ Ver Video en YouTube</a>
+            `;
+          } else if (r.tipo === 'detallada') {
+            let htmlEjercicios = '';
+            (r.ejercicios || []).forEach((ej, index) => {
+              htmlEjercicios += `
+                <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top:8px;">
+                  <strong>${index + 1}. ${ej.nombre_ejercicio}</strong>
+                  <p style="margin:4px 0; color:#94a3b8; font-size:0.88rem;">🏋️ Peso: ${ej.peso} | Series: ${ej.numero_repeticiones} | 📝 ${ej.observaciones || 'Sin obs'}</p>
+                </div>
+              `;
+            });
+
+            div.innerHTML = `
+              <h4 style="margin:0 0 8px 0; color:var(--accent);">📋 Rutina: "${r.titulo_rutina}" (${r.dia_semana})</h4>
+              ${htmlEjercicios}
+            `;
+          }
+
           contenedor.appendChild(div);
         });
 
@@ -440,6 +441,8 @@
     function cerrarSesion() {
       document.getElementById('loginSection').style.display = 'block';
       document.getElementById('appSection').style.display = 'none';
+      document.getElementById('usernameInput').value = '';
+      document.getElementById('passwordInput').value = '';
     }
   </script>
 </body>
